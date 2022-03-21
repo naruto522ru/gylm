@@ -1,0 +1,121 @@
+# This is a basic workflow to help you get started with Actions
+
+name: build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '30 5,17 * * *'
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # The "build" workflow
+  Build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    
+    # Setup Go
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.18' # The Go version to download (if necessary) and use.
+        #check-latest: true
+    
+    # Install all the dependencies
+    - name: Install dependencies
+      run: |
+        go get golang.org/x/lint/golint
+        go version
+
+    # Creating a .env file to avoid errors
+    - name: Create .env
+      run: touch .env
+
+    # Run build of the application for Linux x86_64
+    - name: Run build for Linux x86_64 and run software
+      run: |
+        GOOS=linux GOARCH=amd64 go build -o gylm 
+        ./gylm & killall -15 gylm
+
+    # Run build of the application for Linux x86
+    - name: Run build for Linux x86
+      run: |
+        go clean -modcache
+        GOOS=linux GOARCH=386 go build -o gylm
+
+    # Run build of the application for Windows x86_64
+    - name: Run build for Windows x86_64
+      run: |
+        go clean -modcache
+        GOOS=windows GOARCH=amd64 go build -o gylm
+
+    # Run build of the application for Windows x86
+    - name: Run build for Windows x86
+      run: |
+        go clean -modcache
+        GOOS=windows GOARCH=386 go build -o gylm
+
+    # Run build of the application for Windows ARMv8 (64-bit)
+    - name: Run build for Windows ARMv8
+      run: |
+        go clean -modcache
+        GOOS=windows GOARCH=arm64 go build -o gylm
+
+    # Run build of the application for MACOS X x86_64
+    - name: Run build for MacOS X x86_64
+      run: |
+        go clean -modcache
+        GOOS=darwin GOARCH=amd64 go build -o gylm
+
+    # Run build of the application for MACOS X ARMv8 (64-bit)
+    - name: Run build for MacOS X ARMv8
+      run: |
+        go clean -modcache
+        GOOS=darwin GOARCH=arm64 go build -o gylm
+
+    - name: Run build for Linux x86_64 with the patch and run software
+      run: |
+        rm -f .env
+        go clean -modcache
+        patch < main.patch
+        GOOS=linux GOARCH=amd64 go build -o gylm
+        URL_DL_HTML=https://raw.githubusercontent.com/naruto522ru/gylm/fork-main/templates/index.html ./gylm & killall -15 gylm
+
+    - name: Run build for Linux x86 with the patch
+      run: |
+        go clean -modcache
+        GOOS=linux GOARCH=386 go build -o gylm
+
+    - name: Run build for Windows x86_64 with the patch
+      run: |
+        go clean -modcache
+        GOOS=windows GOARCH=amd64 go build -o gylm
+
+    - name: Run build for Windows x86 with the patch
+      run: |
+        go clean -modcache
+        GOOS=windows GOARCH=386 go build -o gylm
+
+    - name: Run build for Windows ARMv8 with the patch
+      run: |
+        go clean -modcache
+        GOOS=windows GOARCH=arm64 go build -o gylm
+
+    - name: Run build for MacOS X x86_64 with the patch
+      run: |
+        go clean -modcache
+        GOOS=darwin GOARCH=amd64 go build -o gylm
+
+    - name: Run build for MacOS X ARMv8 with the patch
+      run: |
+        go clean -modcache
+        GOOS=darwin GOARCH=arm64 go build -o gylm
