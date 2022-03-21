@@ -1,0 +1,66 @@
+--- main.go	2022-03-19 17:52:31.430000000 +0300
++++ main_patch.go	2022-03-19 17:48:56.980000000 +0300
+@@ -13,8 +13,9 @@
+ 	"os"
+ 	"text/template"
+ 	"time"
++	"io"
+ 
+-	"github.com/joho/godotenv"
++//	"github.com/joho/godotenv"
+ 	"github.com/shkh/lastfm-go/lastfm"
+ )
+ 
+@@ -34,11 +35,41 @@
+ }
+ 
+ func init() {
+-	if err := godotenv.Load(); err != nil {
+-		log.Fatalf("No .env file found")
++//	if err := godotenv.Load(); err != nil {
++//		log.Fatalf("No .env file found")
++//	}
++fileUrl := os.Getenv("URL_DL_HTML")
++	err := DownloadFile("/tmp/index.html", fileUrl)
++	if err != nil {
++		panic(err)
+ 	}
++	fmt.Println("Downloaded: " + fileUrl)
+ }
+ 
++// DownloadFile will download a url to a local file. It's efficient because it will
++// write as it downloads and not load the whole file into memory.
++func DownloadFile(filepath string, url string) error {
++
++	// Get the data
++	resp, err := http.Get(url)
++	if err != nil {
++		return err
++	}
++	defer resp.Body.Close()
++
++	// Create the file
++	out, err := os.Create(filepath)
++	if err != nil {
++		return err
++	}
++	defer out.Close()
++
++	// Write the body to file
++	_, err = io.Copy(out, resp.Body)
++	return err
++}
++
++
+ func main() {
+ 	key := os.Getenv("KEY")
+ 	secret := os.Getenv("SECRET")
+@@ -88,7 +119,7 @@
+ 			UserUrl:    userUrl,
+ 		}
+ 
+-		tmpl, err := template.ParseFiles("templates/index.html")
++		tmpl, err := template.ParseFiles("/tmp/index.html")
+ 		if err != nil {
+ 			fmt.Printf("template execution: %s", err)
+ 		}
