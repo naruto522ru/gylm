@@ -22,14 +22,14 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-    
+
     # Setup Go
     - name: Setup Go
       uses: actions/setup-go@v2
       with:
         go-version: '^1.18' # The Go version to download (if necessary) and use.
         #check-latest: true
-    
+
     # Install all the dependencies
     - name: Install dependencies
       run: |
@@ -41,10 +41,15 @@ jobs:
       run: touch .env
 
     # Run build of the application for Linux x86_64
-    - name: Run build for Linux x86_64 and run software
+    - name: Run build for Linux x86_64
       run: |
         GOOS=linux GOARCH=amd64 go build -o gylm 
-        ./gylm & killall -15 gylm
+
+    - name: Run software x86_64
+      run: ./gylm & sleep 5s
+
+    - name: Check port 1984/tcp x86_64
+      run: nc -z -v 127.0.0.1 1984 && killall -15 gylm
 
     # Run build of the application for Linux x86
     - name: Run build for Linux x86
@@ -82,13 +87,18 @@ jobs:
         go clean -modcache
         GOOS=darwin GOARCH=arm64 go build -o gylm
 
-    - name: Run build for Linux x86_64 with the patch and run software
+    - name: Run build for Linux x86_64 with the patch
       run: |
         rm -f .env
         go clean -modcache
         patch < main.patch
         GOOS=linux GOARCH=amd64 go build -o gylm
-        URL_DL_HTML=https://raw.githubusercontent.com/naruto522ru/gylm/fork-main/templates/index.html ./gylm & killall -15 gylm
+
+    - name: Run software x86_64 with the patch
+      run: URL_DL_HTML=https://raw.githubusercontent.com/naruto522ru/gylm/fork-main/templates/index.html ./gylm & sleep 5s
+
+    - name: Check port 1984/tcp x86_64 with the patch
+      run: nc -z -v 127.0.0.1 1984 && killall -15 gylm
 
     - name: Run build for Linux x86 with the patch
       run: |
