@@ -29,7 +29,7 @@ Dynamic realtime profile ReadMe linked with Yandex Music / Last.fm
 
 * Clone repo
 ```
-git clone https://github.com/naruto522ru/gylm.git && cd gylm && git checkout fork-main
+git clone https://github.com/naruto522ru/gylm.git && cd gylm && git checkout fork-main-experiment
 ```
 * Patch file (Optional)
 

@@ -1,66 +1,79 @@
---- main.go	2022-03-19 17:52:31.430000000 +0300
-+++ main_patch.go	2022-03-19 17:48:56.980000000 +0300
-@@ -13,8 +13,9 @@
+--- main.go	2022-03-28 23:45:04.346666158 +0300
++++ main_patch.go	2022-03-28 23:44:52.393332826 +0300
+@@ -13,8 +13,10 @@
  	"os"
  	"text/template"
  	"time"
-+	"io"
++    "runtime"
++    "os/exec"
  
 -	"github.com/joho/godotenv"
 +//	"github.com/joho/godotenv"
  	"github.com/shkh/lastfm-go/lastfm"
  )
  
-@@ -34,11 +35,41 @@
+@@ -34,17 +36,47 @@
  }
  
  func init() {
 -	if err := godotenv.Load(); err != nil {
 -		log.Fatalf("No .env file found")
+-	}
 +//	if err := godotenv.Load(); err != nil {
 +//		log.Fatalf("No .env file found")
 +//	}
-+fileUrl := os.Getenv("URL_DL_HTML")
-+	err := DownloadFile("/tmp/index.html", fileUrl)
-+	if err != nil {
-+		panic(err)
- 	}
-+	fmt.Println("Downloaded: " + fileUrl)
  }
  
-+// DownloadFile will download a url to a local file. It's efficient because it will
-+// write as it downloads and not load the whole file into memory.
-+func DownloadFile(filepath string, url string) error {
+ func main() {
+-	key := os.Getenv("KEY")
+-	secret := os.Getenv("SECRET")
+-	user := os.Getenv("USERNAME")
+-	limit := os.Getenv("LIMIT")
+-	userUrl = os.Getenv("YANDEX_URL")
++        key := os.Getenv("KEY")
++        secret := os.Getenv("SECRET")
++        user := os.Getenv("USERNAME")
++        limit := os.Getenv("LIMIT")
++        userUrl = os.Getenv("YANDEX_URL")
 +
-+	// Get the data
-+	resp, err := http.Get(url)
-+	if err != nil {
-+		return err
-+	}
-+	defer resp.Body.Close()
-+
-+	// Create the file
-+	out, err := os.Create(filepath)
-+	if err != nil {
-+		return err
-+	}
-+	defer out.Close()
-+
-+	// Write the body to file
-+	_, err = io.Copy(out, resp.Body)
-+	return err
++if runtime.GOOS == "linux" {
++        fileUrl := os.Getenv("URL_DL_HTML")
++        fmt.Println("OS Detect: GNU/Linux!")
++        pathPrint := "/tmp/"
++        fmt.Println("Set directory download:", pathPrint)
++        saveAsPrint := "gylm.html"
++        fmt.Println("Save as:", saveAsPrint)
++//  cmd := exec.Command("curl", "-o", pathPrint + saveAsPrint, "https://raw.githubusercontent.com/naruto522ru/gylm/fork-main/templates/index.html")
++    cmd := exec.Command("curl", "-o", pathPrint + saveAsPrint, fileUrl)
++    err := cmd.Run()
++    if err != nil {
++        log.Fatal(err)
++    }
 +}
 +
-+
- func main() {
- 	key := os.Getenv("KEY")
- 	secret := os.Getenv("SECRET")
-@@ -88,7 +119,7 @@
++if runtime.GOOS == "darwin" {
++        fileUrl := os.Getenv("URL_DL_HTML")
++    fmt.Println("OS Detect: Mac OS X!")
++    pathPrint := "/tmp/"
++    fmt.Println("Set directory download:", pathPrint)
++    saveAsPrint := "gylm.html"
++    fmt.Println("Save as:", saveAsPrint)
++//  cmd := exec.Command("curl", "-o", pathPrint + saveAsPrint, "https://raw.githubusercontent.com/naruto522ru/gylm/fork-main/templates/index.html")
++    cmd := exec.Command("curl", "-o", pathPrint + saveAsPrint, fileUrl)
++    err := cmd.Run()
++    if err != nil {
++        log.Fatal(err)
++    }
++}
+ 
+ 	http.HandleFunc("/yandex", func(w http.ResponseWriter, r *http.Request) {
+ 
+@@ -88,7 +120,7 @@
  			UserUrl:    userUrl,
  		}
  
 -		tmpl, err := template.ParseFiles("templates/index.html")
-+		tmpl, err := template.ParseFiles("/tmp/index.html")
++		tmpl, err := template.ParseFiles("pathPrint + saveAsPrint")
  		if err != nil {
  			fmt.Printf("template execution: %s", err)
  		}
